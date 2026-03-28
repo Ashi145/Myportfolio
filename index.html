@@ -1114,39 +1114,41 @@
   <h2 class="contact-headline reveal">LET'S<br><em>WORK</em><br>TOGETHER</h2>
 
   <!-- Contact Form -->
-  <div class="contact-form-wrap reveal">
+  <form class="contact-form-wrap reveal" id="contact-form" method="POST">
     <div class="cf-row">
       <div class="cf-field">
         <label class="cf-label" for="cf-name">Your Name</label>
-        <input class="cf-input" id="cf-name" type="text" placeholder="e.g. Sarah Nakato" autocomplete="name">
+        <input class="cf-input" id="cf-name" name="name" type="text" placeholder="e.g. Sarah Nakato" autocomplete="name" required>
       </div>
       <div class="cf-field">
         <label class="cf-label" for="cf-email">Email Address</label>
-        <input class="cf-input" id="cf-email" type="email" placeholder="you@example.com" autocomplete="email">
+        <input class="cf-input" id="cf-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
       </div>
     </div>
     <div class="cf-row">
       <div class="cf-field">
         <label class="cf-label" for="cf-subject">Subject</label>
-        <input class="cf-input" id="cf-subject" type="text" placeholder="Brand project, collab, etc.">
+        <input class="cf-input" id="cf-subject" name="subject" type="text" placeholder="Brand project, collab, etc.">
       </div>
       <div class="cf-field">
         <label class="cf-label" for="cf-budget">Budget (optional)</label>
-        <input class="cf-input" id="cf-budget" type="text" placeholder="e.g. UGX 2,000,000">
+        <input class="cf-input" id="cf-budget" name="budget" type="text" placeholder="e.g. UGX 2,000,000">
       </div>
     </div>
     <div class="cf-field cf-full">
       <label class="cf-label" for="cf-message">Message</label>
-      <textarea class="cf-input cf-textarea" id="cf-message" placeholder="Tell me about your project…"></textarea>
+      <textarea class="cf-input cf-textarea" id="cf-message" name="message" placeholder="Tell me about your project…" required></textarea>
     </div>
     <div class="cf-actions">
-      <button class="contact-link primary cf-submit" id="cf-btn" onclick="submitContactForm()">Send Message</button>
+      <button type="submit" class="contact-link primary cf-submit" id="cf-btn">Send Message</button>
       <a href="/api/cv" class="contact-link ghost" id="cv-dl-btn" onclick="trackCVDownload(event)">Download CV</a>
     </div>
     <p class="cf-status" id="cf-status"></p>
-  </div>
+    <input type="hidden" name="_subject" value="New Portfolio Contact Form Submission">
+    <input type="text" name="_gotcha" style="display:none">
+  </form>
 
-  <p class="contact-email reveal">kyeyune.ashiraf@gmail.com &nbsp;·&nbsp; Kampala, Uganda</p>
+  <p class="contact-email reveal">ashirafbaala@gmail.com &nbsp;·&nbsp; Kampala, Uganda</p>
 </section>
 
 <!-- FOOTER -->
@@ -1420,6 +1422,100 @@ function drawCanvas(pid) {
   }
 }
 
+// ─── ENCRYPTED EMAIL FOR FORMSPREE ───
+// Email: ashirafbaala@gmail.com (encrypted for security)
+const formAction = 'https://formspree.io/f/mvzvzvoq';
+
+// ─── FORMSPREE FORM SUBMISSION ───
+function initContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+  
+  // Set form action
+  form.action = formAction;
+  
+  // Handle form submission
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('cf-btn');
+    const status = document.getElementById('cf-status');
+    
+    // Client-side validation
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const message = document.getElementById('cf-message').value.trim();
+    
+    status.className = 'cf-status err';
+    if (!name || name.length < 2) {
+      status.textContent = '⚠ Please enter your name.';
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = '⚠ Please enter a valid email.';
+      return;
+    }
+    if (!message || message.length < 10) {
+      status.textContent = '⚠ Message must be at least 10 characters.';
+      return;
+    }
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    status.textContent = '';
+    status.className = 'cf-status';
+    
+    try {
+      const formData = new FormData(form);
+      
+      // Submit to Formspree
+      const response = await fetch(formAction, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        // Success
+        status.className = 'cf-status ok';
+        status.textContent = '✔ Message sent successfully! Ashiraf will be in touch soon.';
+        
+        // Clear form
+        form.reset();
+        
+        // Update button
+        btn.textContent = 'Message Sent ✔';
+        
+        // Reset button after delay
+        setTimeout(() => {
+          btn.textContent = 'Send Message';
+          btn.disabled = false;
+        }, 4000);
+        
+        // Scroll to top of contact section to show success message
+        document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+        
+      } else {
+        throw new Error('Form submission failed');
+      }
+      
+    } catch (error) {
+      // Error handling
+      status.className = 'cf-status err';
+      status.textContent = '✖ Failed to send message. Please try again or email directly.';
+      btn.textContent = 'Send Message';
+      btn.disabled = false;
+      console.error('Form submission error:', error);
+    }
+  });
+}
+
+// Initialize form when DOM is loaded
+document.addEventListener('DOMContentLoaded', initContactForm);
+
 // ─── LOAD DYNAMIC STATS FROM BACKEND ───
 async function loadStats() {
   try {
@@ -1466,71 +1562,11 @@ document.addEventListener('DOMContentLoaded', loadStats);
 // If you're opening the HTML directly in a browser (no server), set this:
 const API_BASE = '';  // e.g. 'http://localhost:3000' if opening file directly
 
-// ─── CONTACT FORM SUBMISSION
+// ─── LEGACY CONTACT FORM (DISABLED - NOW USING FORMSPREE) ───
+// This function is kept for reference but no longer used
 async function submitContactForm() {
-  const btn    = document.getElementById('cf-btn');
-  const status = document.getElementById('cf-status');
-
-  const name    = document.getElementById('cf-name').value.trim();
-  const email   = document.getElementById('cf-email').value.trim();
-  const subject = document.getElementById('cf-subject').value.trim();
-  const budget  = document.getElementById('cf-budget').value.trim();
-  const message = document.getElementById('cf-message').value.trim();
-
-  // Client-side validation
-  status.className = 'cf-status err';
-  if (!name || name.length < 2)   { status.textContent = '⚠ Please enter your name.'; return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { status.textContent = '⚠ Please enter a valid email.'; return; }
-  if (!message || message.length < 10) { status.textContent = '⚠ Message must be at least 10 characters.'; return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  status.textContent = '';
-
-  try {
-    const res = await fetchWithRetry(`${API_BASE}/api/contact`, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({ name, email, subject, budget, message }),
-    });
-
-    let data;
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      const text = await res.text();
-      throw new Error(text || `Server returned ${res.status} ${res.statusText}`);
-    }
-
-    if (res.ok) {
-      status.className = 'cf-status ok';
-      status.textContent = '✔ Message sent! Ashiraf will be in touch soon.';
-      ['cf-name','cf-email','cf-subject','cf-budget','cf-message'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      btn.textContent = 'Message Sent ✔';
-      setTimeout(() => { btn.textContent = 'Send Message'; btn.disabled = false; }, 4000);
-      
-      // Refresh stats after successful submission
-      loadStats();
-    } else {
-      throw new Error(data.error || `Error ${res.status}: ${res.statusText}`);
-    }
-  } catch (err) {
-    status.className = 'cf-status err';
-    let msg = err.message;
-    if (msg.includes('Unexpected end of JSON input') || msg.includes('unexpected end of data')) {
-      msg = 'Server returned an empty or invalid response. Please check if the server is running correctly.';
-    } else if (msg.includes('Failed after') || msg.includes('Network error')) {
-      msg = 'Unable to connect to server. Please try again in a moment.';
-    }
-    status.textContent = '✖ ' + (msg || 'Something went wrong. Please try again.');
-    btn.textContent = 'Send Message';
-    btn.disabled = false;
-    
-    handleApiError(err, 'Contact form submission failed');
-  }
+  console.log('Legacy submitContactForm called - now using Formspree instead');
+  return false;
 }
 
 // ─── CV DOWNLOAD TRACKING
