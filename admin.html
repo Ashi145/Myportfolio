@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KA Dashboard — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --surface: #111110;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0ede6;
+    --muted: #6b6860;
+    --accent: #e8c547;
+    --red: #c94040;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 18px;
+    padding: 60px;
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 60px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 40px;
+  }
+
+  .brand h1 {
+    font-family: var(--font-display);
+    font-size: 80px;
+    letter-spacing: 4px;
+    line-height: 0.9;
+  }
+  .brand p {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .auth-box {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 12px 16px;
+    outline: none;
+    width: 300px;
+    transition: border-color 0.3s;
+  }
+  input:focus { border-color: var(--accent); }
+  button {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  button:hover { opacity: 0.9; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    margin-bottom: 60px;
+  }
+  .stat-card {
+    background: var(--surface);
+    padding: 32px;
+  }
+  .stat-val {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 48px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .message-list { display: flex; flex-direction: column; gap: 20px; }
+  .message-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .message-card:hover { border-color: rgba(232,197,71,0.3); }
+  .msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .msg-meta h3 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: 2px;
+  }
+  .msg-meta p {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .msg-body {
+    font-style: italic;
+    font-size: 20px;
+    color: rgba(240,237,230,0.8);
+    margin-bottom: 32px;
+    line-height: 1.8;
+  }
+  .msg-footer {
+    display: flex;
+    gap: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+  .msg-info label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .msg-info span {
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  .btn-delete {
+    position: absolute;
+    top: 40px; right: 40px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+  }
+  .btn-delete:hover {
+    border-color: var(--red);
+    color: var(--red);
+    opacity: 1;
+  }
+
+  .status-msg {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red);
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 30px 20px; }
+    header { flex-direction: column; align-items: flex-start; gap: 40px; }
+    .auth-box { width: 100%; flex-direction: column; align-items: stretch; }
+    input { width: 100%; }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>MESSAGES</h1>
+      <p>Portfolio Admin Dashboard</p>
+    </div>
+    <div class="msg-meta">
+       <div class="auth-box">
+        <input type="password" id="token" placeholder="Enter Admin Token" onkeyup="if(event.key==='Enter') loadData()">
+        <button onclick="loadData()">Unlock</button>
+      </div>
+      <p id="status" class="status-msg"></p>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat-card"><span class="stat-val" id="stat-visits">0</span><span class="stat-label">Total Visits</span></div>
+    <div class="stat-card"><span class="stat-val" id="stat-unique">0</span><span class="stat-label">Unique Visitors</span></div>
+    <div class="stat-card"><span class="stat-val" id="stat-messages">0</span><span class="stat-label">Messages</span></div>
+    <div class="stat-card"><span class="stat-val" id="stat-downloads">0</span><span class="stat-label">CV Downloads</span></div>
+  </div>
+
+  <div class="message-list" id="message-list">
+    <!-- Messages will be injected here -->
+  </div>
+</div>
+
+<script>
+  async function loadData() {
+    const tokenInput = document.getElementById('token');
+    const token = tokenInput.value.trim();
+    const status = document.getElementById('status');
+    const list = document.getElementById('message-list');
+    
+    if (!token) { status.textContent = '⚠ Please enter your token.'; return; }
+
+    status.textContent = '⌛ Connecting...';
+    list.innerHTML = '';
+    
+    console.log('Attempting login with token:', token);
+
+    try {
+      // Load Stats
+      const sRes = await fetch('/admin/dashboard', { headers: { 'x-admin-token': token } });
+      
+      if (!sRes.ok) {
+        if (sRes.status === 401) throw new Error('Incorrect token. Please check the terminal output.');
+        throw new Error(`Server error: ${sRes.status} ${sRes.statusText}`);
+      }
+      
+      const stats = await sRes.json();
+      console.log('Stats loaded successfully:', stats);
+      
+      document.getElementById('stat-visits').textContent = stats.stats.totalVisits;
+      document.getElementById('stat-unique').textContent = stats.stats.uniqueVisitors;
+      document.getElementById('stat-messages').textContent = stats.messageCount;
+      document.getElementById('stat-downloads').textContent = stats.stats.cvDownloads;
+
+      // Load Messages
+      const mRes = await fetch('/admin/messages', { headers: { 'x-admin-token': token } });
+      if (!mRes.ok) throw new Error('Failed to load messages.');
+      
+      const mData = await mRes.json();
+      console.log('Messages loaded:', mData.messages.length);
+      
+      if (!mData.messages || mData.messages.length === 0) {
+        list.innerHTML = '<p style="text-align:center; opacity:0.5; font-style:italic;">No messages received yet.</p>';
+      } else {
+        // Clear list first
+        list.innerHTML = '';
+        mData.messages.reverse().forEach(msg => {
+          const date = new Date(msg.received_at).toLocaleString();
+          const card = document.createElement('div');
+          card.className = 'message-card';
+          card.innerHTML = `
+            <div class="msg-header">
+              <div class="msg-meta">
+                <p>${date} · REF: ${msg.id}</p>
+                <h3>${msg.name || 'Anonymous'}</h3>
+              </div>
+              <button class="btn-delete" onclick="deleteMsg('${msg.id}')">Delete</button>
+            </div>
+            <div class="msg-body">"${msg.message}"</div>
+            <div class="msg-footer">
+              <div class="msg-info"><label>Email</label><span>${msg.email}</span></div>
+              <div class="msg-info"><label>Subject</label><span>${msg.subject}</span></div>
+              ${msg.budget ? `<div class="msg-info"><label>Budget</label><span>${msg.budget}</span></div>` : ''}
+              ${msg.timeline ? `<div class="msg-info"><label>Timeline</label><span>${msg.timeline}</span></div>` : ''}
+            </div>
+          `;
+          list.appendChild(card);
+        });
+      }
+      
+      status.style.color = '#6fcf6f';
+      status.textContent = '✔ Dashboard unlocked!';
+      sessionStorage.setItem('adminToken', token);
+
+    } catch (err) {
+      console.error('Login failed:', err);
+      status.style.color = 'var(--red)';
+      status.textContent = '✖ ' + err.message;
+    }
+  }
+
+  async function deleteMsg(id) {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    const token = document.getElementById('token').value.trim();
+    try {
+      const res = await fetch(`/admin/messages?id=${id}`, { 
+        method: 'DELETE',
+        headers: { 'x-admin-token': token }
+      });
+      if (res.ok) loadData();
+      else alert('Failed to delete');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // Auto-fill token if in session
+  window.onload = () => {
+    const saved = sessionStorage.getItem('adminToken');
+    if (saved) {
+      document.getElementById('token').value = saved;
+      loadData();
+    }
+  }
+</script>
+
+</body>
+</html>
